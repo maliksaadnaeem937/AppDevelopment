@@ -18,14 +18,11 @@ export default function HomeScreen() {
 
       <Image source={Logo} style={styles.image} />
 
-      <ThemedLink href={"about"} style={styles.link}>
-        Go To About Page
-      </ThemedLink>
-      <ThemedLink href={"contact"} style={styles.link}>
-        Go To Contact Page
-      </ThemedLink>
       <ThemedLink href={"register"} style={styles.link}>
         Go To Register Page
+      </ThemedLink>
+      <ThemedLink href={"profile"} style={styles.link}>
+        Go To Dashboard
       </ThemedLink>
     </ThemedView>
   );
@@ -54,6 +51,6 @@ const styles = StyleSheet.create({
     paddingInline: 12,
     paddingBlock: 6,
     borderRadius: 4,
-    fontStyle: "bold",
+    fontWeight: "bold",
   },
 });

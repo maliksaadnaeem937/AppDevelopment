@@ -1,19 +1,65 @@
-import { Stack } from "expo-router";
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useColorScheme } from "react-native";
+import { Tabs } from "expo-router";
+import Colors from "../../constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 
-const Layout = () => {
+const DashboardLayout = () => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme] ?? Colors["light"];
   return (
-    <Stack
+    <Tabs
       screenOptions={{
-        headerShown: true,
-        animation: "slide_from_left",
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.navBackground,
+        },
+        tabBarActiveTintColor: theme.iconColourFocused,
+        tabBarInactiveTintColor: theme.iconColour,
       }}
-      
-    ></Stack>
+    >
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? "person" : "person-outline"}
+              size={30}
+              color={focused ? theme.iconColourFocused : theme.iconColour}
+            />
+          ),
+        }}
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="books"
+        options={{
+          title: "Books",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? "book" : "book-outline"}
+              size={30}
+              color={focused ? theme.iconColourFocused : theme.iconColour}
+            />
+          ),
+        }}
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="create"
+        options={{
+          title: "Create",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? "create" : "create-outline"}
+              size={30}
+              color={focused ? theme.iconColourFocused : theme.iconColour}
+            />
+          ),
+        }}
+      ></Tabs.Screen>
+    </Tabs>
   );
 };
 
 const styles = StyleSheet.create({});
 
-export default Layout;
+export default DashboardLayout;

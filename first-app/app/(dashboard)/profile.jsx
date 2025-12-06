@@ -5,7 +5,7 @@ import ThemedText from "../../components/ThemedText";
 
 const Profile = () => {
   return (
-    <ThemedView styles={styles.container}>
+    <ThemedView style={styles.container}>
       <ThemedText title={true} style={styles.title}>
         Your Email
       </ThemedText>
@@ -23,10 +23,13 @@ const styles = StyleSheet.create({
     gap: 30,
   },
   title: {
-    fontStyle: "bold",
-    fontSize: 18,
+    fontWeight: "bold",
+    fontSize: 22,
+    textAlign: "center",
   },
-  text: {},
+  text: {
+    textAlign: "center",
+  },
 });
 
 export default Profile;

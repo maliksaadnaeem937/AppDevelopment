@@ -1,24 +1,31 @@
-import { Stack } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { useColorScheme } from "react-native";
-import Colors from "../../constants/Colors";
+import { Stack } from "expo-router";
 
-const Layout = () => {
-  const colorScheme = useColorScheme();
-  console.log(colorScheme);
-  const theme = Colors[colorScheme] ?? Colors["light"];
+const AuthLayout = () => {
   return (
     <Stack
       screenOptions={{
-        headerShown: false,
         animation: "slide_from_right",
+        headerShown: false,
       }}
-    
-    ></Stack>
+    >
+      <Stack.Screen
+        name="login"
+        options={{
+          title: "Login",
+        }}
+      ></Stack.Screen>
+      <Stack.Screen
+        name="register"
+        options={{
+          title: "Register",
+        }}
+      ></Stack.Screen>
+    </Stack>
   );
 };
 
 const styles = StyleSheet.create({});
 
-export default Layout;
+export default AuthLayout;

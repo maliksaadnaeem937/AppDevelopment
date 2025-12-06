@@ -1,28 +1,28 @@
 const Colors = {
   primary: "#6849a7",
   warning: "#cc475a",
+  btnTextColor: "white",
 
   dark: {
-    text: "#d4d4d4",
+    text: "#9cf112ff",
     title: "#fff",
     background: "#252231",
     navBackground: "#201e2b",
     iconColour: "#9591a5",
     iconColourFocused: "#fff",
     uiBackground: "#2f2b3d",
-    linkBackground: "green",
-    linkColor: "white",
+    linkColor: "blue",
   },
   light: {
-    text: "#e1e0e9ff",
+    text: "#7121c7ff",
     title: "#201e2b",
-    background: "#e0dfe8",
-    navBackground: "#e8e7ef",
-    iconColour: "#686477",
-    iconColourFocused: "#201e2b",
+    background: "#dbd9e7ff",
+    navBackground: "#d1ccf0ff",
+    iconColour: "#6ccc73ff",
+    iconColourFocused: "#3919ecff",
     uiBackground: "#d6d5e1",
     linkBackground: "blue",
-    linkColor: "white",
+    linkColor: "blue",
   },
 };
 

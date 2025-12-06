@@ -1,12 +1,12 @@
 {
   "expo": {
-    "scheme": "first-app",
-    "name": "first-app",
-    "slug": "first-app",
+    "name": "second-app",
+    "slug": "second-app",
     "version": "1.0.0",
+    "scheme": "second-app",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -17,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.saad.secondapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
