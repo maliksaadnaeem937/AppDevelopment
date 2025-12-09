@@ -12,7 +12,6 @@ const ThemedLink = ({ style, children, ...props }) => {
 
 const styles = StyleSheet.create({
   defaultStyle: {
-    textDecorationLine: "underline",
     color: Colors["light"].linkColor,
   },
 });

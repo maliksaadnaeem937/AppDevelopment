@@ -12,6 +12,7 @@ const Colors = {
     iconColourFocused: "#fff",
     uiBackground: "#2f2b3d",
     linkColor: "blue",
+    bookCard: "#2A2735",
   },
   light: {
     text: "#7121c7ff",
@@ -23,6 +24,7 @@ const Colors = {
     uiBackground: "#d6d5e1",
     linkBackground: "blue",
     linkColor: "blue",
+    bookCard: "#EFEAFF",
   },
 };
 

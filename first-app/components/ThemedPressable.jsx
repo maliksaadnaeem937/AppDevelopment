@@ -1,11 +1,11 @@
 import React from "react";
-import { StyleSheet, View, Pressable, Text } from "react-native"; // Added Text here
+import { StyleSheet,  Pressable, Text } from "react-native";
 import Colors from "../constants/Colors";
 
-const ThemedPressable = ({ children, ...props }) => {
+const ThemedPressable = ({ children, style: pStyle, ...props }) => {
   return (
     <Pressable
-      style={({ pressed }) => [styles.btn, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.btn, pStyle, pressed && styles.pressed]}
       {...props}
     >
       <Text style={styles.text}>{children}</Text>
@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "white",
+    textAlign: "center",
   },
 });
 
