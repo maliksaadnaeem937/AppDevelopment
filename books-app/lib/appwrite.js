@@ -9,4 +9,9 @@ client
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const avatars = new Avatars(client);
+export const USERS_COLLECTION_ID = "users";
+export const MESSAGES_COLLECTION_ID = "messages";
+export const BOOKS_COLLECTION_ID = "6936c27d00112ad6267c";
+export const DATABASE_ID = "6936c253001ae7a7c240";
+
 export default client;

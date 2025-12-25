@@ -6,7 +6,7 @@ const ThemedView = ({ style, children, safe = false, ...props }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme] ?? Colors.light;
   const inset = useSafeAreaInsets();
-  console.log(inset,safe)
+  console.log(inset, safe);
 
   if (!safe) {
     return (

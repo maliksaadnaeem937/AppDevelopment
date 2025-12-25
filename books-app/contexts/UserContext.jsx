@@ -2,6 +2,7 @@ import { createContext, useEffect } from "react";
 import { useState } from "react";
 import { account } from "../lib/appwrite";
 import { ID } from "react-native-appwrite";
+import { DATABASE_ID, USERS_COLLECTION_ID, databases } from "../lib/appwrite";
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
@@ -13,10 +14,24 @@ export const UserProvider = ({ children }) => {
     const response = await account.get();
     setUser(response);
   };
-  const register = async (email, password) => {
-    await account.create(ID.unique(), email, password);
-    await login(email, password);
+
+  const createUser = async (username, userId) => {
+    try {
+      databases.createDocument(DATABASE_ID, USERS_COLLECTION_ID, ID.unique(), {
+        username,
+        userId,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
   };
+  const register = async (email, password) => {
+    const U_ID = ID.unique();
+    await account.create(U_ID, email, password);
+    await login(email, password);
+    createUser("Anonymoys", U_ID);
+  };
+
   const logout = async () => {
     await account.deleteSession("current");
     setUser(null);

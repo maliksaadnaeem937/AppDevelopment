@@ -24,6 +24,9 @@ export default function HomeScreen() {
       <ThemedLink href={"profile"} style={styles.link}>
         Go To Dashboard
       </ThemedLink>
+      <ThemedLink href={"chat-home"} style={styles.link}>
+        Go To Chat
+      </ThemedLink>
     </ThemedView>
   );
 }

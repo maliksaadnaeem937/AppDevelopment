@@ -1,9 +1,0 @@
-EXPO_PUBLIC_APPWRITE_PROJECT_ID=6933c8c00039c7c24910
-EXPO_PUBLIC_APPWRITE_PROJECT_NAME="NetNinja_ReactNative"
-EXPO_PUBLIC_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
-
-
-client
-  .setEndpoint("https://fra.cloud.appwrite.io/v1")
-  .setProject("6933c8c00039c7c24910")
-  .setPlatform("dev.saad.shelfie");

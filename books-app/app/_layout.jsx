@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { UserProvider } from "../contexts/UserContext";
 import Toast from "react-native-toast-message";
 import BooksProvider from "../contexts/BooksContext";
+import ChatProvider from "../contexts/ChatContext";
 
 const RootLayout = () => {
   const colorScheme = useColorScheme();
@@ -39,6 +40,12 @@ const RootLayout = () => {
           />
           <Stack.Screen
             name="(dashboard)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="(chat)"
             options={{
               headerShown: false,
             }}
