@@ -1,14 +1,14 @@
-import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
   Text,
   TextInput,
-  KeyboardAvoidingView,
   FlatList,
   Platform,
   Pressable,
+  Keyboard,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ChatRoomHeader from "../../../components/ChatRoomHeader";
@@ -16,71 +16,96 @@ import useChat from "../../../hooks/useChat";
 import useUser from "../../../hooks/useUser";
 import { useLocalSearchParams } from "expo-router";
 
-/* ---------------- MESSAGE BUBBLE COMPONENT ---------------- */
+// Format timestamp to hh:mm AM/PM
+const formatTime = (dateString) => {
+  const date = new Date(dateString);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const h = hours % 12 || 12;
+  const m = minutes < 10 ? `0${minutes}` : minutes;
+  return `${h}:${m} ${ampm}`;
+};
+
+// ---------------- MESSAGE BUBBLE ----------------
 const MessageBubble = ({ message, isMe }) => (
   <View style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}>
     <Text style={isMe ? styles.myText : styles.otherText}>
       {message.messageText}
     </Text>
+    <Text style={styles.timeText}>{formatTime(message.$createdAt)}</Text>
   </View>
 );
 
-/* ---------------- MAIN CHAT ROOM ---------------- */
+// ---------------- CHAT ROOM ----------------
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams();
   const { user } = useUser();
   const { messages, sendMessage } = useChat();
 
-  console.log("Opened chat for chat id =", chatId);
-
   const [text, setText] = useState("");
+  const [keyboardHeight] = useState(new Animated.Value(0));
   const flatListRef = useRef(null);
+
+  // Handle keyboard events
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
+      Animated.timing(keyboardHeight, {
+        toValue: e.endCoordinates.height,
+        duration: e.duration,
+        useNativeDriver: false,
+      }).start();
+    });
+    const hideSub = Keyboard.addListener("keyboardWillHide", (e) => {
+      Animated.timing(keyboardHeight, {
+        toValue: 0,
+        duration: e.duration,
+        useNativeDriver: false,
+      }).start();
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Scroll to bottom when messages update
+  useEffect(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!text.trim()) return;
     const message = text;
     setText("");
-    console.log("Mesage sending mesage=",message);
-    console.log("chat id = ",chatId);
     await sendMessage(message.trim(), chatId);
-
-    // Scroll to bottom after sending a message
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
-  useEffect(() => {
-    // Scroll to bottom whenever messages change
-    flatListRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
-
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-      <ChatRoomHeader />
+      {/* Fixed Header */}
+      <View style={styles.headerWrapper}>
+        <ChatRoomHeader />
+      </View>
 
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        {/* Messages */}
+      {/* Messages + Input */}
+      <View style={styles.chatArea}>
         <FlatList
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.$id}
-          contentContainerStyle={styles.messagesContent}
+          contentContainerStyle={{ padding: 12, paddingBottom: 80 }}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            return (
-              <MessageBubble
-                message={item}
-                isMe={item.senderId === user?.$id}
-              />
-            );
-          }}
+          renderItem={({ item }) => (
+            <MessageBubble message={item} isMe={item.senderId === user?.$id} />
+          )}
+          style={{ flex: 1 }}
         />
 
-        {/* Input */}
-        <View style={styles.inputWrapper}>
+        <Animated.View
+          style={[styles.inputWrapper, { marginBottom: keyboardHeight }]}
+        >
           <TextInput
             style={styles.inputBox}
             placeholder="Type your message"
@@ -92,26 +117,26 @@ const ChatRoom = () => {
           <Pressable style={styles.sendBtn} onPress={handleSend}>
             <Text style={styles.sendText}>Send</Text>
           </Pressable>
-        </View>
-      </KeyboardAvoidingView>
+        </Animated.View>
+      </View>
     </SafeAreaView>
   );
 };
 
 export default ChatRoom;
 
-/* ---------------- STYLES ---------------- */
+// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
   },
-  keyboardView: {
-    flex: 1,
+  headerWrapper: {
+    zIndex: 1,
   },
-  messagesContent: {
-    padding: 12,
-    paddingBottom: 20,
+  chatArea: {
+    flex: 1,
+    backgroundColor: "#000",
   },
   bubble: {
     maxWidth: "75%",
@@ -139,6 +164,12 @@ const styles = StyleSheet.create({
     color: "#e5e5e5",
     fontSize: 15,
     lineHeight: 20,
+  },
+  timeText: {
+    fontSize: 10,
+    color: "#bbb",
+    marginTop: 2,
+    alignSelf: "flex-end",
   },
   inputWrapper: {
     flexDirection: "row",

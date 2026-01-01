@@ -16,14 +16,11 @@ A **React Native** mobile app built with **Expo**, featuring **user authenticati
 - View your personal book list
 - Add new books with title, author, and description
 - Delete your own books
-- **Future:** Update books functionality
 
 ### Chat
 - Real-time chat with other users
 - Chat rooms automatically created per user pair
-- Messages:
-  - Readable by all participants
-  - Only sender can update or delete
+- Send messages in real-time
 
 ### UI & UX
 - Dark/light theme support
