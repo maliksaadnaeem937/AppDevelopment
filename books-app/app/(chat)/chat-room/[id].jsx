@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import {
   StyleSheet,
   View,
@@ -6,14 +6,18 @@ import {
   TextInput,
   FlatList,
   Pressable,
-  Keyboard,
-  Animated,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
   useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
+import Toast from "react-native-toast-message"; // Import Toast
+
 import ChatRoomHeader from "../../../components/ChatRoomHeader";
-import useChat from "../../../hooks/useChat";
+import { ChatContext } from "../../../contexts/ChatContext";
 import useUser from "../../../hooks/useUser";
 import { useLocalSearchParams } from "expo-router";
 import { colors as themeColors } from "../../../lib/chat-colors";
@@ -67,20 +71,55 @@ const MessageBubble = ({ message, isMe, onDelete, colors }) => (
 
 // ---------------- CHAT ROOM ----------------
 const ChatRoom = () => {
-  const { id: chatId, name: receiverName } = useLocalSearchParams();
+  const { id: chatId, name: receiverName, ai } = useLocalSearchParams();
+  const isAI = ai === "1" || chatId === "ai";
+
   const { user } = useUser();
-  const { messages, sendMessage, deleteMessage } = useChat();
+  const {
+    messages,
+    sendMessage,
+    loadMessages,
+    loadAIMessages,
+    askAI,
+    sendDocumentToAI,
+    deleteMessage,
+  } = useContext(ChatContext);
 
   const [text, setText] = useState("");
-  const [keyboardHeight] = useState(new Animated.Value(0));
+  const [sending, setSending] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(true);
+
   const flatListRef = useRef(null);
   const colorScheme = useColorScheme();
+  const colors = themeColors(colorScheme);
 
-  // ---------------- COLORS ----------------
-  const colors = themeColors(colorScheme); // <-- get colors from chat-colors.js
+  // ---------------- Load messages on mount ----------------
+  useEffect(() => {
+    const load = async () => {
+      setLoadingMessages(true);
+      try {
+        if (isAI) {
+          await loadAIMessages();
+        } else {
+          await loadMessages(chatId);
+        }
+      } catch (error) {
+        console.log("Load messages error:", error);
+        Toast.show({
+          type: "error",
+          text1: "Failed to load messages",
+          text2: "Please check your connection",
+        });
+      } finally {
+        setLoadingMessages(false);
+      }
+    };
+    load();
+  }, [chatId, isAI]);
 
-  // Delete message
+  // ---------------- Delete message ----------------
   const handleDelete = (messageId) => {
+    if (isAI) return; // Disable delete for AI chats
     if (!messageId) return;
     Alert.alert(
       "Delete Message",
@@ -90,45 +129,155 @@ const ChatRoom = () => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => deleteMessage(messageId),
+          onPress: async () => {
+            try {
+              await deleteMessage(messageId);
+              Toast.show({
+                type: "success",
+                text1: "Message deleted",
+              });
+            } catch (error) {
+              Toast.show({
+                type: "error",
+                text1: "Failed to delete message",
+              });
+            }
+          },
         },
       ]
     );
   };
 
-  // Keyboard handling
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
-      Animated.timing(keyboardHeight, {
-        toValue: e.endCoordinates.height,
-        duration: e.duration,
-        useNativeDriver: false,
-      }).start();
-    });
-    const hideSub = Keyboard.addListener("keyboardWillHide", (e) => {
-      Animated.timing(keyboardHeight, {
-        toValue: 0,
-        duration: e.duration,
-        useNativeDriver: false,
-      }).start();
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  // Scroll to bottom
+  // ---------------- Scroll to bottom ----------------
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
+  // ---------------- Send text message ----------------
   const handleSend = async () => {
-    if (!text.trim()) return;
-    const message = text;
+    if (!text.trim()) {
+      Toast.show({
+        type: "warning",
+        text1: "Empty message",
+        text2: "Please type a message before sending",
+      });
+      return;
+    }
+
+    const messageText = text;
     setText("");
-    await sendMessage(message.trim(), chatId);
-    flatListRef.current?.scrollToEnd({ animated: true });
+    setSending(true);
+
+    try {
+      if (isAI) {
+        await askAI(messageText);
+        Toast.show({
+          type: "success",
+          text1: "Message sent",
+          text2: "AI is processing your request",
+        });
+      } else {
+        await sendMessage(messageText, chatId);
+        Toast.show({
+          type: "success",
+          text1: "Message sent",
+        });
+      }
+    } catch (error) {
+      console.log("Send error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Send failed",
+        text2: error.message || "Could not send your message",
+      });
+    } finally {
+      setSending(false);
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  };
+
+  // ---------------- Send document ----------------
+  const handleDocumentUpload = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "text/plain"],
+      });
+
+      console.log("Document picker result:", res);
+
+      // Check if user canceled
+      if (res.canceled || !res.assets || res.assets.length === 0) {
+        console.log("Document picker was canceled");
+        return;
+      }
+
+      // Use the first asset from the response
+      const file = res.assets[0];
+
+      if (!file || !file.uri) {
+        throw new Error("Invalid file selected");
+      }
+
+      console.log("Selected file:", file);
+
+      // Create FormData object
+      const formData = new FormData();
+
+      // Create file object - this is the proper format for React Native
+      const fileObject = {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType,
+      };
+
+      // Append the file
+      formData.append("file", fileObject);
+
+      // Append user ID and query
+      formData.append("userId", user.$id);
+      const userQuery = text.trim() || "Please analyze this document";
+      formData.append("userQuery", userQuery);
+
+      console.log("FormData created, sending to AI...");
+      setSending(true);
+
+      // Send the document to AI
+      await sendDocumentToAI(formData);
+
+      Toast.show({
+        type: "success",
+        text1: "Document uploaded successfully",
+        text2: "AI is analyzing your document",
+      });
+
+      // After sending, reload AI messages to get the updated conversation
+      await loadAIMessages();
+
+      setText("");
+    } catch (err) {
+      console.log("Document upload error details:", err.message);
+
+      let errorMessage = err.message || "Could not upload the document";
+
+      // Provide more user-friendly error messages
+      if (errorMessage.includes("Network request failed")) {
+        errorMessage = "Network error. Please check your connection.";
+      } else if (errorMessage.includes("bytes object has no attribute")) {
+        errorMessage = "Invalid file format. Please try a different file.";
+      } else if (errorMessage.includes("'ai_response'")) {
+        errorMessage = "AI service error. Please try again.";
+      }
+
+      // Show error toast
+      Toast.show({
+        type: "error",
+        text1: "Upload Failed",
+        text2: errorMessage,
+      });
+    } finally {
+      setSending(false);
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
   };
 
   return (
@@ -139,58 +288,87 @@ const ChatRoom = () => {
         <ChatRoomHeader receiverName={receiverName} colors={colors} />
       </View>
 
-      <View style={[styles.chatArea, { backgroundColor: colors.chatArea }]}>
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.$id}
-          contentContainerStyle={{ padding: 12, paddingBottom: 80 }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <MessageBubble
-              message={item}
-              isMe={item.senderId === user?.$id}
-              onDelete={handleDelete}
-              colors={colors}
-            />
-          )}
-          style={{ flex: 1 }}
-          onContentSizeChange={() =>
-            flatListRef.current?.scrollToEnd({ animated: true })
-          }
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
-
-        <Animated.View
-          style={[
-            styles.inputWrapper,
-            {
-              marginBottom: keyboardHeight,
-              backgroundColor: colors.inputWrapper,
-            },
-          ]}
-        >
-          <TextInput
-            style={[
-              styles.inputBox,
-              { backgroundColor: colors.inputBox, color: colors.inputText },
-            ]}
-            placeholder="Type your message"
-            placeholderTextColor={colorScheme === "dark" ? "#999" : "#888"}
-            value={text}
-            onChangeText={setText}
-            multiline
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      >
+        <View style={[styles.chatArea, { backgroundColor: colors.chatArea }]}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.$id}
+            contentContainerStyle={{ padding: 12, paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <MessageBubble
+                message={item}
+                isMe={item.senderId === user?.$id}
+                onDelete={handleDelete}
+                colors={colors}
+              />
+            )}
           />
-          <Pressable
-            style={[styles.sendBtn, { backgroundColor: colors.sendBtn }]}
-            onPress={handleSend}
+
+          <View
+            style={[
+              styles.inputWrapper,
+              { backgroundColor: colors.inputWrapper },
+            ]}
           >
-            <Text style={[styles.sendText, { color: colors.sendText }]}>
-              Send
-            </Text>
-          </Pressable>
-        </Animated.View>
-      </View>
+            <TextInput
+              style={[
+                styles.inputBox,
+                {
+                  backgroundColor: colors.inputBox,
+                  color: colors.inputText,
+                  opacity: sending || loadingMessages ? 0.6 : 1,
+                },
+              ]}
+              placeholder="Type your message"
+              placeholderTextColor={colorScheme === "dark" ? "#999" : "#888"}
+              value={text}
+              onChangeText={setText}
+              multiline
+              editable={!sending && !loadingMessages}
+            />
+
+            <Pressable
+              style={[
+                styles.sendBtn,
+                {
+                  backgroundColor:
+                    sending || loadingMessages ? "#999" : colors.sendBtn,
+                },
+              ]}
+              onPress={handleSend}
+              disabled={sending || loadingMessages}
+            >
+              <Text style={[styles.sendText, { color: colors.sendText }]}>
+                Send
+              </Text>
+            </Pressable>
+
+            {isAI && (
+              <Pressable
+                style={[
+                  styles.sendBtn,
+                  { backgroundColor: sending ? "#999" : colors.sendBtn },
+                ]}
+                onPress={handleDocumentUpload}
+                disabled={sending || loadingMessages}
+              >
+                <Text style={[styles.sendText, { color: colors.sendText }]}>
+                  +Doc
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+
+      {/* Add Toast component at the end of your component */}
+      <Toast />
     </SafeAreaView>
   );
 };
@@ -230,6 +408,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     justifyContent: "center",
+    alignItems: "center",
   },
   sendText: {
     fontWeight: "600",

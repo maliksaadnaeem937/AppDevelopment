@@ -14,7 +14,7 @@ import { router } from "expo-router";
 import { colors as themeColors } from "../../lib/chat-colors";
 
 const ChatHome = () => {
-  const { users, loadingUsers, loadMessages, setActiveChatId } = useChat();
+  const { users, loadingUsers, loadMessages, setActiveChatId,sendDocumentToAI } = useChat();
   const { user } = useUser();
   const [searchText, setSearchText] = useState("");
   const colorScheme = useColorScheme();

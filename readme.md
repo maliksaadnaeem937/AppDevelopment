@@ -1,56 +1,90 @@
-# 📚 React Native Book & Chat App
+# 💬 ChatVerse - React Native Chat App
 
-A **React Native** mobile app built with **Expo**, featuring **user authentication**, **personal book management**, and **real-time chat**. Backend powered by **Appwrite**.
-
----
+A React Native chat app with real-time messaging and AI assistant.
 
 ## 🚀 Features
 
-### Authentication
-- Email/password login & registration
-- Route guards:
-  - `GuestOnly` — only accessible by unauthenticated users
-  - `UserOnly` — only accessible by logged-in users
+- **Real-time user chat** with other app users
+- **AI assistant** for intelligent conversations
+- **Document upload** (PDF/TXT) for AI analysis
 
-### Books Management
-- View your personal book list
-- Add new books with title, author, and description
-- Delete your own books
+## 🛠️ Tech Stack
 
-### Chat
-- Real-time chat with other users
-- Chat rooms automatically created per user pair
-- Send messages in real-time
+**Frontend:**
+- React Native (Expo)
+- Appwrite for messaging
 
-### UI & UX
-- Dark/light theme support
-- Responsive and intuitive interface
-- Activity indicators for loading states
+**Backend (FastAPI):**
+- FastAPI + Uvicorn
+- MongoDB for AI chat storage
+- Ollama for AI
+- PyPDF2 for PDF processing
 
----
+## 📋 Installation
 
-## 🖥 Screens
-
-- **Home Screen** – Welcome page with links to register, dashboard, and chat
-- **Login / Register** – Email/password authentication
-- **Profile Dashboard** – Shows user email and logout
-- **Books List** – View your added books
-- **Add Book** – Form to create a new book
-- **Book Details** – View and delete book
-- **Chat Home** – List of users to chat with
-- **Chat Room** – Real-time messaging
-
----
-
-## ⚙️ Installation
+### Backend Setup:
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd <project-folder>
+# Create requirements.txt with:
+fastapi==0.104.1
+uvicorn==0.24.0
+pymongo==4.6.0
+python-dotenv==1.0.0
+langchain-ollama==0.1.0
+langchain-core==0.1.0
+pypdf2==3.0.1
 
-# Install dependencies
+# Install dependencies:
+pip install -r requirements.txt
+
+# Create .env file:
+MONGODB_URI=your_mongodb_uri
+MONGODB_DB_NAME=chat_db
+```
+
+### Frontend Setup:
+
+```bash
 npm install
+# .env file:
+EXPO_PUBLIC_BACKEND_URL=http://your-ip:8000
+EXPO_PUBLIC_APPWRITE_ENDPOINT=your_appwrite_url
+EXPO_PUBLIC_APPWRITE_PROJECT_ID=your_project_id
+```
 
-# Run the app with Expo
+## 🚀 Run App
+
+```bash
+# Backend:
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Frontend:
 npx expo start
+```
+
+## 🔌 Backend API
+
+- `POST /ask-llm` - Chat with AI
+- `POST /ask-llm-doc` - Upload document to AI
+- `POST /get-chats` - Get AI chat history
+
+## 📁 Files
+
+**Backend:**
+- `main.py` - FastAPI app
+- `database.py` - MongoDB connection
+- `models.py` - Pydantic schemas
+- `requirements.txt` - Python dependencies
+
+**Frontend:**
+- `app/(chat)/` - Chat screens
+- `contexts/ChatContext.js` - Chat logic
+- `lib/appwrite.js` - Appwrite config
+
+## 🔧 Requirements
+
+1. **Appwrite** instance running
+2. **MongoDB** database
+3. **Ollama** with AI model
+4. **Python 3.8+** for backend
+5. **Node.js** for backend

@@ -4,20 +4,15 @@ import {
   ScrollView,
   useColorScheme,
   Pressable,
+  View,
+  Text,
 } from "react-native";
-import ThemedView from "../../../components/ThemedView";
-import ThemedText from "../../../components/ThemedText";
-import { useLocalSearchParams } from "expo-router";
 import useBooks from "../../../hooks/useBooks";
-import ThemedActivityIndicator from "../../../components/ThemedActivityIndicator";
+import { router, useLocalSearchParams } from "expo-router";
 import Colors from "../../../constants/Colors";
-import ThemedPressable from "../../../components/ThemedPressable";
-import { Text } from "react-native";
 import Toast from "react-native-toast-message";
-import { router } from "expo-router";
-import { APPWRITE_ERROR_MESSAGES } from "../../../constants/AppwriteErrors";
 
-const BookDetail = (props) => {
+const BookDetail = () => {
   const { id } = useLocalSearchParams();
   const [book, setBook] = useState(null);
   const { fetchBookById, deleteBook } = useBooks();
@@ -35,7 +30,6 @@ const BookDetail = (props) => {
       });
       router.replace("/books");
     } catch (error) {
-      console.log(error.message);
       Toast.show({
         type: "error",
         text1: "Error",
@@ -44,11 +38,10 @@ const BookDetail = (props) => {
       router.replace("/books");
     }
   }, []);
+
   useEffect(() => {
     const loadBook = async () => {
       const result = await fetchBookById(id);
-      console.log("------------book------------------");
-      console.log(result);
       setBook(result);
     };
     loadBook();
@@ -56,87 +49,92 @@ const BookDetail = (props) => {
 
   if (!book) {
     return (
-      <ThemedView
-        safe={true}
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
       >
-        <ThemedActivityIndicator size={60} />
-      </ThemedView>
+        <Text style={{ color: theme.text, fontSize: 18 }}>Loading book...</Text>
+      </View>
     );
   }
 
   return (
-    <ThemedView safe={true} style={styles.container} {...props}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: theme.background },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={[styles.card, { backgroundColor: theme.myBubble }]}>
+        <Text style={[styles.title, { color: theme.title }]}>{book.title}</Text>
+        <Text style={[styles.author, { color: theme.otherText }]}>
+          Written By: {book.author || "Unknown"}
+        </Text>
+        <Text style={[styles.description, { color: theme.text }]}>
+          {book.description || "No description available."}
+        </Text>
+      </View>
+
+      <Pressable
+        style={[
+          styles.deleteButton,
+          { backgroundColor: theme.warning || "#ee6161" },
+        ]}
+        onPress={() => handleDelete(book.$id)}
       >
-        <ThemedView
-          style={[
-            styles.card,
-            {
-              backGroundColor: theme.bookCard,
-            },
-          ]}
-        >
-          <ThemedText title={true} style={styles.title}>
-            {book.title}
-          </ThemedText>
-          <ThemedText style={styles.author}>
-            Written By {book.author}
-          </ThemedText>
-          <ThemedText style={styles.description}>
-            Description: {book.description}
-          </ThemedText>
-        </ThemedView>
-        <Pressable
-          style={[styles.warning]}
-          onPress={() => handleDelete(book.$id)}
-        >
-          <Text style={{ color: "white" }}>Delete</Text>
-        </Pressable>
-      </ScrollView>
-    </ThemedView>
+        <Text style={styles.deleteButtonText}>Delete Book</Text>
+      </Pressable>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContainer: {
-    paddingVertical: 20,
-    paddingTop: 40,
+  container: {
+    paddingVertical: 30,
+    paddingHorizontal: 16,
     alignItems: "center",
-    rowGap: 20,
+    gap: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   card: {
-    width: "95%",
+    width: "100%",
     borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 6,
-    rowGap: 20,
+    elevation: 5,
+    gap: 12,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
-    marginBottom: 8,
     textTransform: "capitalize",
   },
-  author: { fontSize: 14, marginBottom: 4, textTransform: "capitalize" },
-  idText: { fontSize: 12, marginBottom: 12 },
-  description: { fontSize: 16, lineHeight: 22, textAlign: "justify" },
-  warning: {
-    backgroundColor: "#ee6161ff",
-    paddingInline: 50,
-    paddingBlock: 10,
-    borderRadius: 5,
+  author: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "justify",
+  },
+  deleteButton: {
+    width: "80%",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });
 

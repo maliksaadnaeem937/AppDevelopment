@@ -14,44 +14,47 @@ const RootLayout = () => {
   return (
     <UserProvider>
       <BooksProvider>
-        <StatusBar value="auto" />
-        <Stack
-          screenOptions={{
-            animation: "slide_from_right",
-            headerStyle: {
-              backgroundColor: theme.navBackground,
-            },
-            headerTintColor: theme.title,
-            headerTitleAlign: "center",
-          }}
-        >
-          <Stack.Screen
-            name="index"
-            options={{
-              title: "Home",
+        <ChatProvider>
+          <StatusBar value="auto" />
+          <Stack
+            screenOptions={{
+              animation: "slide_from_right",
+              headerStyle: {
+                backgroundColor: theme.navBackground,
+              },
+              headerTintColor: theme.title,
+              headerTitleAlign: "center",
             }}
-          />
+          >
+            <Stack.Screen
+              name="index"
+              options={{
+                title: "Home",
+              }}
+            />
 
-          <Stack.Screen
-            name="(auth)"
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="(dashboard)"
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="(chat)"
-            options={{
-              headerShown: false,
-            }}
-          />
-        </Stack>
-        <Toast />
+            <Stack.Screen
+              name="(auth)"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="(dashboard)"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="(chat)"
+              options={{
+                headerShown: false,
+              }}
+            />
+          </Stack>
+          {/* Add position="bottom" prop */}
+          <Toast position="bottom" />
+        </ChatProvider>
       </BooksProvider>
     </UserProvider>
   );
