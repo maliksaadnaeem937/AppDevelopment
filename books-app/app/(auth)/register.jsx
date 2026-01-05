@@ -1,29 +1,34 @@
 import React, { useState } from "react";
 import { Keyboard, StyleSheet } from "react-native";
+import { TouchableWithoutFeedback } from "react-native";
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
 import ThemedLink from "../../components/ThemedLink";
 import ThemedPressable from "../../components/ThemedPressable";
 import ThemedTextInput from "../../components/ThemedTextInput";
-import { TouchableWithoutFeedback } from "react-native";
+import ThemedActivityIndicator from "../../components/ThemedActivityIndicator";
 import useUser from "../../hooks/useUser";
 import Toast from "react-native-toast-message";
-import ThemedActivityIndicator from "../../components/ThemedActivityIndicator";
 import { APPWRITE_ERROR_MESSAGES } from "../../constants/AppwriteErrors";
+
 const Register = () => {
+  const [username, setUsername] = useState(""); // ✅ added
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { register } = useUser();
   const [loading, setLoading] = useState(false);
+
+  const { register } = useUser();
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      await register(email, password);
+
+      await register(email, password, username); // ✅ passed username
 
       Toast.show({
         type: "success",
         text1: "Success!",
-        text2: "Registration Succesful!.",
+        text2: "Registration Successful!",
         position: "bottom",
         visibilityTime: 1000,
       });
@@ -31,6 +36,7 @@ const Register = () => {
       const message =
         APPWRITE_ERROR_MESSAGES[error.message] ||
         APPWRITE_ERROR_MESSAGES["default"];
+
       Toast.show({
         type: "error",
         text1: "Error!",
@@ -46,9 +52,18 @@ const Register = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.container}>
-        <ThemedText style={[styles.title]} title={true}>
+        <ThemedText style={styles.title} title={true}>
           Register For an Account!
         </ThemedText>
+
+        {/* ✅ Username */}
+        <ThemedTextInput
+          placeholder="Username"
+          style={{ width: "80%" }}
+          onChangeText={setUsername}
+          value={username}
+        />
+
         <ThemedTextInput
           placeholder="Email"
           style={{ width: "80%" }}
@@ -56,12 +71,13 @@ const Register = () => {
           onChangeText={setEmail}
           value={email}
         />
+
         <ThemedTextInput
           placeholder="Password"
           style={{ width: "80%" }}
+          secureTextEntry
           onChangeText={setPassword}
           value={password}
-          secureTextEntry={true}
         />
 
         {loading ? (

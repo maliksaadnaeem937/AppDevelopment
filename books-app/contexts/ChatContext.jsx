@@ -46,7 +46,7 @@ export default function ChatProvider({ children }) {
       if (!messageText?.trim()) return;
       if (!chatId) return;
       if (!user.$id) {
-        console.log("user.$id is missing while sendding mesage");
+        console.log("user.$id is missing while sending message");
         return;
       }
 
@@ -58,10 +58,8 @@ export default function ChatProvider({ children }) {
           { messageText, chatId: chatId, senderId: user.$id },
           [
             Permission.read(Role.any()), // readable by all
-
-            // Only sender can UPDATE / DELETE
-            Permission.update(Role.user(user.$id)),
-            Permission.delete(Role.user(user.$id)),
+            Permission.update(Role.user(user.$id)), // only sender can update
+            Permission.delete(Role.user(user.$id)), // only sender can delete
           ]
         );
       } catch (error) {
@@ -70,6 +68,22 @@ export default function ChatProvider({ children }) {
     },
     [user?.$id]
   );
+
+  // 🔹 Delete message
+  const deleteMessage = useCallback(async (messageId) => {
+    if (!messageId) return;
+    try {
+      await databases.deleteDocument(
+        DATABASE_ID,
+        MESSAGES_COLLECTION_ID,
+        messageId
+      );
+      // remove locally
+      setMessages((prev) => prev.filter((m) => m.$id !== messageId));
+    } catch (error) {
+      console.error("Delete message error:", error);
+    }
+  }, []);
 
   // 🔹 Load messages for a chat
   const loadMessages = useCallback(async (chatId) => {
@@ -80,8 +94,6 @@ export default function ChatProvider({ children }) {
         MESSAGES_COLLECTION_ID,
         [Query.equal("chatId", chatId), Query.orderAsc("$createdAt")]
       );
-      console.log("Loaded Messages = ", response.documents);
-
       setMessages(response.documents);
     } catch (error) {
       console.error("Load messages error:", error);
@@ -134,6 +146,7 @@ export default function ChatProvider({ children }) {
         loadUsers,
         loadMessages,
         sendMessage,
+        deleteMessage, // <-- added here
         activeChatId,
         setActiveChatId,
       }}

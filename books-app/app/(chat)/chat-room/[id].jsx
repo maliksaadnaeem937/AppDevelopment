@@ -5,18 +5,20 @@ import {
   Text,
   TextInput,
   FlatList,
-  Platform,
   Pressable,
   Keyboard,
   Animated,
+  Alert,
+  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ChatRoomHeader from "../../../components/ChatRoomHeader";
 import useChat from "../../../hooks/useChat";
 import useUser from "../../../hooks/useUser";
 import { useLocalSearchParams } from "expo-router";
+import { colors as themeColors } from "../../../lib/chat-colors";
 
-// Format timestamp to hh:mm AM/PM
+// Format timestamp
 const formatTime = (dateString) => {
   const date = new Date(dateString);
   const hours = date.getHours();
@@ -28,26 +30,73 @@ const formatTime = (dateString) => {
 };
 
 // ---------------- MESSAGE BUBBLE ----------------
-const MessageBubble = ({ message, isMe }) => (
-  <View style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}>
-    <Text style={isMe ? styles.myText : styles.otherText}>
+const MessageBubble = ({ message, isMe, onDelete, colors }) => (
+  <Pressable
+    onLongPress={() => isMe && onDelete?.(message.$id)}
+    style={[
+      styles.bubble,
+      {
+        backgroundColor: isMe ? colors.myBubble : colors.otherBubble,
+        alignSelf: isMe ? "flex-end" : "flex-start",
+        borderBottomRightRadius: isMe ? 4 : 16,
+        borderBottomLeftRadius: isMe ? 16 : 4,
+      },
+    ]}
+  >
+    <Text
+      style={{
+        color: isMe ? colors.myText : colors.otherText,
+        fontSize: 15,
+        lineHeight: 20,
+      }}
+    >
       {message.messageText}
     </Text>
-    <Text style={styles.timeText}>{formatTime(message.$createdAt)}</Text>
-  </View>
+    <Text
+      style={{
+        fontSize: 10,
+        color: colors.timeText,
+        marginTop: 2,
+        alignSelf: "flex-end",
+      }}
+    >
+      {formatTime(message.$createdAt)}
+    </Text>
+  </Pressable>
 );
 
 // ---------------- CHAT ROOM ----------------
 const ChatRoom = () => {
-  const { id: chatId } = useLocalSearchParams();
+  const { id: chatId, name: receiverName } = useLocalSearchParams();
   const { user } = useUser();
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, deleteMessage } = useChat();
 
   const [text, setText] = useState("");
   const [keyboardHeight] = useState(new Animated.Value(0));
   const flatListRef = useRef(null);
+  const colorScheme = useColorScheme();
 
-  // Handle keyboard events
+  // ---------------- COLORS ----------------
+  const colors = themeColors(colorScheme); // <-- get colors from chat-colors.js
+
+  // Delete message
+  const handleDelete = (messageId) => {
+    if (!messageId) return;
+    Alert.alert(
+      "Delete Message",
+      "Are you sure you want to delete this message?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteMessage(messageId),
+        },
+      ]
+    );
+  };
+
+  // Keyboard handling
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
       Animated.timing(keyboardHeight, {
@@ -69,7 +118,7 @@ const ChatRoom = () => {
     };
   }, []);
 
-  // Scroll to bottom when messages update
+  // Scroll to bottom
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
@@ -83,14 +132,14 @@ const ChatRoom = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Fixed Header */}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={styles.headerWrapper}>
-        <ChatRoomHeader />
+        <ChatRoomHeader receiverName={receiverName} colors={colors} />
       </View>
 
-      {/* Messages + Input */}
-      <View style={styles.chatArea}>
+      <View style={[styles.chatArea, { backgroundColor: colors.chatArea }]}>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -98,24 +147,47 @@ const ChatRoom = () => {
           contentContainerStyle={{ padding: 12, paddingBottom: 80 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <MessageBubble message={item} isMe={item.senderId === user?.$id} />
+            <MessageBubble
+              message={item}
+              isMe={item.senderId === user?.$id}
+              onDelete={handleDelete}
+              colors={colors}
+            />
           )}
           style={{ flex: 1 }}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
 
         <Animated.View
-          style={[styles.inputWrapper, { marginBottom: keyboardHeight }]}
+          style={[
+            styles.inputWrapper,
+            {
+              marginBottom: keyboardHeight,
+              backgroundColor: colors.inputWrapper,
+            },
+          ]}
         >
           <TextInput
-            style={styles.inputBox}
+            style={[
+              styles.inputBox,
+              { backgroundColor: colors.inputBox, color: colors.inputText },
+            ]}
             placeholder="Type your message"
-            placeholderTextColor="#999"
+            placeholderTextColor={colorScheme === "dark" ? "#999" : "#888"}
             value={text}
             onChangeText={setText}
             multiline
           />
-          <Pressable style={styles.sendBtn} onPress={handleSend}>
-            <Text style={styles.sendText}>Send</Text>
+          <Pressable
+            style={[styles.sendBtn, { backgroundColor: colors.sendBtn }]}
+            onPress={handleSend}
+          >
+            <Text style={[styles.sendText, { color: colors.sendText }]}>
+              Send
+            </Text>
           </Pressable>
         </Animated.View>
       </View>
@@ -125,19 +197,10 @@ const ChatRoom = () => {
 
 export default ChatRoom;
 
-// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-  headerWrapper: {
-    zIndex: 1,
-  },
-  chatArea: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+  container: { flex: 1 },
+  headerWrapper: { zIndex: 1 },
+  chatArea: { flex: 1 },
   bubble: {
     maxWidth: "75%",
     paddingVertical: 8,
@@ -145,36 +208,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginVertical: 4,
   },
-  myBubble: {
-    backgroundColor: "#2563eb",
-    alignSelf: "flex-end",
-    borderBottomRightRadius: 4,
-  },
-  myText: {
-    color: "#fff",
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  otherBubble: {
-    backgroundColor: "#2a2a2a",
-    alignSelf: "flex-start",
-    borderBottomLeftRadius: 4,
-  },
-  otherText: {
-    color: "#e5e5e5",
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  timeText: {
-    fontSize: 10,
-    color: "#bbb",
-    marginTop: 2,
-    alignSelf: "flex-end",
-  },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "flex-end",
-    backgroundColor: "#1a1a1a",
     padding: 8,
     borderTopWidth: 1,
     borderTopColor: "#333",
@@ -186,20 +222,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: "#2a2a2a",
-    color: "#fff",
     fontSize: 16,
   },
   sendBtn: {
     marginLeft: 8,
-    backgroundColor: "#2563eb",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     justifyContent: "center",
   },
   sendText: {
-    color: "#fff",
     fontWeight: "600",
   },
 });

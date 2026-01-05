@@ -25,11 +25,11 @@ export const UserProvider = ({ children }) => {
       console.log(error.message);
     }
   };
-  const register = async (email, password) => {
+  const register = async (email, password, username) => {
     const U_ID = ID.unique();
     await account.create(U_ID, email, password);
     await login(email, password);
-    createUser("Anonymoys", U_ID);
+    createUser(username, U_ID);
   };
 
   const logout = async () => {

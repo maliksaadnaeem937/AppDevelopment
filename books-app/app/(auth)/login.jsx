@@ -29,7 +29,7 @@ const Login = () => {
         visibilityTime: 1000,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       const message =
         APPWRITE_ERROR_MESSAGES[error.message] ||
         APPWRITE_ERROR_MESSAGES["default"];
