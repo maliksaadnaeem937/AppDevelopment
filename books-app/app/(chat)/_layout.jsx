@@ -35,7 +35,7 @@ const ChatLayout = () => {
           <Stack.Screen
             name="chat-room/[id]"
             options={{
-              headerShown: false, // we already use ChatRoomHeader
+              headerShown: false, 
             }}
           />
         </Stack>

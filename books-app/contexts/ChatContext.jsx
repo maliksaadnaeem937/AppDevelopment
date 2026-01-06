@@ -7,6 +7,8 @@ import client from "../lib/appwrite";
 
 export const ChatContext = createContext(null);
 
+const BASE_URL = "http://192.168.137.15:8000";
+
 // 🔹 Same chatId for both users
 export const getChatId = (senderId, receiverId) =>
   [String(senderId), String(receiverId)].sort().join("_");
@@ -91,9 +93,13 @@ export default function ChatProvider({ children }) {
 
   // ---------------- AI messages ----------------
   const loadAIMessages = useCallback(async () => {
-    if (!user?.$id) return;
+    if (!user?.$id) {
+      console.log("user missing");
+      return;
+    }
+    setMessages([]);
     try {
-      const res = await fetch("http://192.168.43.79:8000/get-chats", {
+      const res = await fetch(`${BASE_URL}/get-chats`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.$id }),
@@ -115,7 +121,7 @@ export default function ChatProvider({ children }) {
     try {
       console.log("Sending document to AI...");
 
-      const response = await fetch("http://192.168.43.79:8000/ask-llm-doc", {
+      const response = await fetch(`${BASE_URL}/ask-llm-doc`, {
         method: "POST",
         body: formData,
       });
@@ -150,7 +156,7 @@ export default function ChatProvider({ children }) {
       setMessages((prev) => [...prev, userMsg]);
 
       try {
-        const res = await fetch("http://192.168.43.79:8000/ask-llm", {
+        const res = await fetch(`${BASE_URL}/ask-llm`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: user.$id, query: text }),
@@ -217,7 +223,6 @@ export default function ChatProvider({ children }) {
         deleteMessage,
         activeChatId,
         setActiveChatId,
-        // AI
         loadAIMessages,
         askAI,
         sendDocumentToAI,

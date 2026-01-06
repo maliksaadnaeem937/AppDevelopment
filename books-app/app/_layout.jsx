@@ -14,47 +14,45 @@ const RootLayout = () => {
   return (
     <UserProvider>
       <BooksProvider>
-        <ChatProvider>
-          <StatusBar value="auto" />
-          <Stack
-            screenOptions={{
-              animation: "slide_from_right",
-              headerStyle: {
-                backgroundColor: theme.navBackground,
-              },
-              headerTintColor: theme.title,
-              headerTitleAlign: "center",
+        <StatusBar value="auto" />
+        <Stack
+          screenOptions={{
+            animation: "slide_from_right",
+            headerStyle: {
+              backgroundColor: theme.navBackground,
+            },
+            headerTintColor: theme.title,
+            headerTitleAlign: "center",
+          }}
+        >
+          <Stack.Screen
+            name="index"
+            options={{
+              title: "Home",
             }}
-          >
-            <Stack.Screen
-              name="index"
-              options={{
-                title: "Home",
-              }}
-            />
+          />
 
-            <Stack.Screen
-              name="(auth)"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="(dashboard)"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="(chat)"
-              options={{
-                headerShown: false,
-              }}
-            />
-          </Stack>
-          {/* Add position="bottom" prop */}
-          <Toast position="bottom" />
-        </ChatProvider>
+          <Stack.Screen
+            name="(auth)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="(dashboard)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="(chat)"
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack>
+
+        <Toast position="bottom" bottomOffset={20} />
       </BooksProvider>
     </UserProvider>
   );

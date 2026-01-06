@@ -10,17 +10,19 @@ import {
   Platform,
   Alert,
   useColorScheme,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
-import Toast from "react-native-toast-message"; // Import Toast
+import Toast from "react-native-toast-message";
 
 import ChatRoomHeader from "../../../components/ChatRoomHeader";
 import { ChatContext } from "../../../contexts/ChatContext";
 import useUser from "../../../hooks/useUser";
 import { useLocalSearchParams } from "expo-router";
 import { colors as themeColors } from "../../../lib/chat-colors";
+import { ActivityIndicator } from "react-native";
 
 // Format timestamp
 const formatTime = (dateString) => {
@@ -119,7 +121,7 @@ const ChatRoom = () => {
 
   // ---------------- Delete message ----------------
   const handleDelete = (messageId) => {
-    if (isAI) return; // Disable delete for AI chats
+    if (isAI) return;
     if (!messageId) return;
     Alert.alert(
       "Delete Message",
@@ -171,11 +173,6 @@ const ChatRoom = () => {
     try {
       if (isAI) {
         await askAI(messageText);
-        Toast.show({
-          type: "success",
-          text1: "Message sent",
-          text2: "AI is processing your request",
-        });
       } else {
         await sendMessage(messageText, chatId);
         Toast.show({
@@ -244,12 +241,6 @@ const ChatRoom = () => {
       // Send the document to AI
       await sendDocumentToAI(formData);
 
-      Toast.show({
-        type: "success",
-        text1: "Document uploaded successfully",
-        text2: "AI is analyzing your document",
-      });
-
       // After sending, reload AI messages to get the updated conversation
       await loadAIMessages();
 
@@ -280,6 +271,22 @@ const ChatRoom = () => {
     }
   };
 
+  if (loadingMessages) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.background,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <ActivityIndicator size={70} color={colors.accent} />
+      </View>
+    );
+  }
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -298,8 +305,15 @@ const ChatRoom = () => {
             ref={flatListRef}
             data={messages}
             keyExtractor={(item) => item.$id}
-            contentContainerStyle={{ padding: 12, paddingBottom: 100 }}
+            contentContainerStyle={{
+              padding: 12,
+              paddingBottom: Platform.OS === "ios" ? 140 : 120,
+            }}
             showsVerticalScrollIndicator={false}
+            onContentSizeChange={() =>
+              flatListRef.current?.scrollToEnd({ animated: true })
+            }
+            keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <MessageBubble
                 message={item}
@@ -353,7 +367,10 @@ const ChatRoom = () => {
               <Pressable
                 style={[
                   styles.sendBtn,
-                  { backgroundColor: sending ? "#999" : colors.sendBtn },
+                  {
+                    backgroundColor:
+                      sending || loadingMessages ? "#999" : colors.sendBtn,
+                  },
                 ]}
                 onPress={handleDocumentUpload}
                 disabled={sending || loadingMessages}
@@ -366,9 +383,6 @@ const ChatRoom = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
-
-      {/* Add Toast component at the end of your component */}
-      <Toast />
     </SafeAreaView>
   );
 };
