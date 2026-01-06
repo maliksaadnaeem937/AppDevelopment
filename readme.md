@@ -1,124 +1,150 @@
-💬 ChatVerse - React Native Chat App
+Got it 👍
+Here is the **updated, clean version** with **`requirements.txt` removed completely**, keeping everything presentation/README ready and correct.
 
-A React Native chat app with real-time messaging and an AI assistant.
+---
 
-🚀 Features
+# 💬 ChatVerse – React Native Chat App
 
-Real-time user chat with other app users (Appwrite-powered)
+**ChatVerse** is a React Native chat application that supports **real-time user messaging** and a **secure personal AI assistant** powered by **Ollama**. The project focuses on **privacy, security, and practical AI usage**, making it suitable for both individuals and organizations.
 
-AI assistant for intelligent conversations
+⚠️ **Note:**
+The **FastAPI backend code is maintained in a separate repository**.
 
-Document upload (PDF/TXT) for AI analysis
+---
 
-🛠️ Tech Stack
+## 🔗 Backend Repository (FastAPI)
 
-Frontend:
+📌 **Backend Source Code:**
+👉 [https://github.com/maliksaadnaeem937/ChatbotUsingOllama/tree/main/Backend](https://github.com/maliksaadnaeem937/ChatbotUsingOllama/tree/main/Backend)
 
-React Native (Expo)
+This repository contains:
 
-Appwrite for messaging
+* AI chat handling logic
+* Document upload and processing
+* MongoDB integration
+* Ollama-based AI responses
 
-Backend:
+---
 
-FastAPI + Uvicorn
+## 🚀 Features
 
-MongoDB for AI chat storage
+* 🔐 Secure authentication using **Appwrite**
+* 👥 Real-time **user-to-user chat**
+* 🤖 Personal AI assistant (Ollama-powered)
+* 📄 Upload and chat with **PDF and TXT documents**
+* 🛡️ Private AI (no public AI services like GPT)
 
-Ollama for AI model
+---
 
-PyPDF2 for PDF processing
+## 🛠️ Tech Stack
 
-📋 Installation
-Backend Setup
+### Frontend (Mobile App)
 
-Create requirements.txt:
+* React Native (Expo)
+* Appwrite (Authentication & User Messaging)
 
-fastapi==0.104.1
-uvicorn==0.24.0
-pymongo==4.6.0
-python-dotenv==1.0.0
-langchain-ollama==0.1.0
-langchain-core==0.1.0
-pypdf2==3.0.1
+### Backend (AI Services)
 
+* FastAPI
+* Uvicorn
+* MongoDB (AI chat storage)
+* Ollama (AI model)
+* LangChain
+* PyPDF2 (PDF text extraction)
 
-Install dependencies:
+---
 
-pip install -r requirements.txt
+## 📋 Installation Guide
 
+### Backend Setup
 
-Create .env file:
+1. Create a `.env` file:
 
+```env
 MONGODB_URI=your_mongodb_uri
 MONGODB_DB_NAME=chat_db
+```
 
+2. Run the backend:
 
-Run backend:
-
+```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
+📌 Make sure your **PC and mobile device are on the same network**.
 
-Make sure your mobile device is on the same network as your PC to access the backend.
+---
 
-Frontend Setup
+### Frontend Setup
+
+1. Install dependencies:
+
+```bash
 npm install
+```
 
+2. Create a `.env` file:
 
-Create .env file:
-
+```env
 EXPO_PUBLIC_BACKEND_URL=http://your-pc-ip:8000
 EXPO_PUBLIC_APPWRITE_ENDPOINT=your_appwrite_url
 EXPO_PUBLIC_APPWRITE_PROJECT_ID=your_project_id
+```
 
+Replace `your-pc-ip` with your local IP
+(e.g., `192.168.137.15`)
 
-Replace your-pc-ip with your PC’s local IP (e.g., 192.168.137.15) that is accessible by your mobile device.
+---
 
-🚀 Run App
+## 🚀 Run the Application
+
+```bash
 # Backend
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 # Frontend
 npx expo start
+```
 
-🔌 Backend API
-Endpoint	Method	Description
-/ask-llm	POST	Chat with AI
-/ask-llm-doc	POST	Upload document to AI
-/get-chats	POST	Fetch AI chat history
-📁 Project Structure
 
-Backend:
 
-main.py – FastAPI backend
+## 🔌 Backend API Endpoints
 
-database.py – MongoDB connection
+| Endpoint       | Method | Description           |
+| -------------- | ------ | --------------------- |
+| `/ask-llm`     | POST   | Chat with AI          |
+| `/ask-llm-doc` | POST   | Upload document to AI |
+| `/get-chats`   | POST   | Fetch AI chat history |
 
-models.py – Pydantic schemas
 
-requirements.txt – Python dependencies
+## 📁 Project Structure
 
-Frontend:
+### Backend
 
-app/(chat)/ – Chat screens
+* `main.py` – FastAPI server
+* `database.py` – MongoDB connection
+* `models.py` – Pydantic schemas
 
-contexts/ChatContext.js – Chat logic
+### Frontend
 
-lib/appwrite.js – Appwrite config
+* `app/(chat)/` – Chat screens
+* `contexts/ChatContext.js` – Chat logic
+* `lib/appwrite.js` – Appwrite configuration
 
-🔧 Requirements
 
-Appwrite instance running
 
-MongoDB database
+## 🔧 Requirements
 
-Ollama AI model installed
+* Appwrite instance running
+* MongoDB database
+* Ollama installed locally or on a private server
+* Python 3.8+
+* Node.js
 
-Python 3.8+ for backend
 
-Node.js for frontend
 
-💡 Notes
+## 💡 Notes
 
-Make sure your PC and mobile are on the same LAN to access the backend.
-
-FastAPI CORS is configured for localhost:3000 by default; update as needed if using different frontend origin.
+* Backend and frontend must be on the **same LAN**
+* Update FastAPI CORS settings if frontend origin changes
+* Backend code is separated for better security and modularity
