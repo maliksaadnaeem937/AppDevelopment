@@ -1,7 +1,4 @@
-Got it 👍
-Here is the **updated, clean version** with **`requirements.txt` removed completely**, keeping everything presentation/README ready and correct.
 
----
 
 # 💬 ChatVerse – React Native Chat App
 
@@ -68,7 +65,7 @@ MONGODB_DB_NAME=chat_db
 2. Run the backend:
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 📌 Make sure your **PC and mobile device are on the same network**.
