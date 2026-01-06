@@ -7,7 +7,9 @@ import client from "../lib/appwrite";
 
 export const ChatContext = createContext(null);
 
-const BASE_URL = "http://192.168.137.15:8000";
+
+const BASE_URL = "http://192.168.43.79:8000";
+
 
 // 🔹 Same chatId for both users
 export const getChatId = (senderId, receiverId) =>
